@@ -50,16 +50,27 @@ App.prototype.postData = function() {
     this.xhr = new XMLHttpRequest();
     this.xhr.open("POST", "/", true);
     this.xhr.setRequestHeader('Accept', 'application/json');
-    this.xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    this.xhr.send(JSON.stringify(this.data));
+    this.xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+ 
+    var size = this.data.reduce(
+        function(acc, next) { return acc + next.length }, 0)
+    this.all = new Float32Array(size);
+    var position = 0;
+    var i;
+    for(i = 0; i < this.data.length; i++) {
+        this.all.set(this.data[i], position)
+        position = position + this.data[i].length
+    }
+
+    this.xhr.send(this.all);
     this.xhr.onreadystatechange = this.onResponse.bind(this);  
 }
 
 App.prototype.recorderProcess = function(e) {
     var left = e.inputBuffer.getChannelData(0);
     this.counter = this.counter + 1;
-    var arr = Array.prototype.slice.call(left)
-    this.data.push(arr)
+    //var arr = Array.prototype.slice.call(left)
+    this.data.push(new Float32Array(left))
     if (this.counter != 100) return; 
     this.postData()
 } 

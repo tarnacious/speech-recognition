@@ -26,4 +26,6 @@
                  [ring/ring-json "0.3.1"]
                  [org.clojure/data.json "0.2.5"]
                  [edu.cmu.sphinx/sphinx4-core "1.0-SNAPSHOT"]
-                 [edu.cmu.sphinx/sphinx4-data "1.0-SNAPSHOT"]])
+                 [edu.cmu.sphinx/sphinx4-data "1.0-SNAPSHOT"]
+                 [com.google.guava/guava "10.0.1"]
+                  ])

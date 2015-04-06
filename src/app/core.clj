@@ -10,12 +10,29 @@
     [clojure.data.json :as json]
     [app.wav :refer [sample-and-save]]
     [app.voice :refer [analyse]]
-    [ring.util.response :refer [response redirect]]
-    ))
+    [ring.util.response :refer [response redirect]])
+  (:import
+    [com.google.common.io LittleEndianDataInputStream]
+    [java.io DataInputStream]
+    [java.io EOFException]))
+
+
+(defn read-float [stream]
+  (try (double (.readFloat stream))
+    (catch EOFException e nil)))
+
+
+(defn readFloats [stream]
+  (let [input (LittleEndianDataInputStream. stream)]
+    (loop [value (read-float input)
+           values []]
+      (if value
+        (recur (read-float input) (cons value values))
+        values))))
 
 (defroutes api-routes
   (POST "/" [] (fn [x]
-    (let [data (flatten (:body x))
+    (let [data (reverse (readFloats (:body x)))
           [id path] (sample-and-save data)]
       (let [text (analyse path)]
         (response {"ok" id
@@ -26,9 +43,7 @@
   (route/resources "/"))
 
 (defroutes combined-routes
-  (wrap-json-response
-    (wrap-json-body api-routes
-      {:keywords? true :bigdecimals? true}))
+  (wrap-json-response api-routes)
   app-routes)
 
 (def app combined-routes)
