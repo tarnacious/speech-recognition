@@ -8,7 +8,8 @@
     (.setAcousticModelPath configuration
       "resource:/edu/cmu/sphinx/models/en-us/en-us")
     (.setDictionaryPath configuration
-      "resource:/edu/cmu/sphinx/models/en-us/cmudict-en-us.dict")
+     ; "resource:/edu/cmu/sphinx/models/en-us/cmudict-en-us.dict")
+      "resource:/example.dict")
     (.setLanguageModelPath configuration
       "resource:/edu/cmu/sphinx/models/en-us/en-us.lm.dmp")
     configuration))
