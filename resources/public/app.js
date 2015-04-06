@@ -11,6 +11,7 @@
 
 
 function App() {
+    this.recording = false;
     this.el = document.querySelectorAll("#output")[0]
     this.record = document.querySelectorAll("#record")[0]
     this.stream;
@@ -37,21 +38,21 @@ App.prototype.bindEvents = function() {
 }
 
 App.prototype.onResponse = function() {
-    if (this.xhr.readyState != 4) return; 
+    if (this.xhr.readyState != 4) return;
     var response = JSON.parse(this.xhr.responseText);
-    this.el.innerHTML = "Understood: " + response.text 
+    this.el.innerHTML = "Understood: " + response.text;
     var audio1 = new Audio("/data/" +  response.ok + ".wav");
     audio1.play();
 }
-   
+
 App.prototype.postData = function() {
     this.processor.disconnect()
-    this.el.innerHTML = "analysing" 
+    this.el.innerHTML = "analysing";
     this.xhr = new XMLHttpRequest();
     this.xhr.open("POST", "/", true);
     this.xhr.setRequestHeader('Accept', 'application/json');
     this.xhr.setRequestHeader('Content-Type', 'application/octet-stream');
- 
+
     var size = this.data.reduce(
         function(acc, next) { return acc + next.length }, 0)
     this.all = new Float32Array(size);
@@ -63,23 +64,27 @@ App.prototype.postData = function() {
     }
 
     this.xhr.send(this.all);
-    this.xhr.onreadystatechange = this.onResponse.bind(this);  
+    this.xhr.onreadystatechange = this.onResponse.bind(this);
 }
 
 App.prototype.recorderProcess = function(e) {
+    if (!this.recording) return;
     var left = e.inputBuffer.getChannelData(0);
     this.counter = this.counter + left.length;
     this.data.push(new Float32Array(left))
-    if (this.counter < (44100 * 1)) return;
-    this.postData()
-} 
+    if (this.counter > (44100 * 1)) {
+        this.recording = false;
+        this.postData()
+    }
+}
 
 App.prototype.start_listening = function() {
     this.el.innerHTML = "Listening.."
+    this.recording = true;
     this.data = []
     this.counter = 1
     this.audioInput = this.context.createMediaStreamSource(stream);
-    this.processor = this.context.createScriptProcessor() 
+    this.processor = this.context.createScriptProcessor();
     this.processor.onaudioprocess = this.recorderProcess.bind(this)
     this.processor.connect(this.context.destination)
     this.audioInput.connect(this.processor);
