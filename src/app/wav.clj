@@ -1,4 +1,6 @@
-(ns app.wav)
+(ns app.wav
+  (:import [javax.sound.sampled AudioInputStream AudioFormat]
+           [javax.sound.sampled.AudioFormat Encoding]))
 
 (defn ubyte [value]
   "Coerce a value in the range of an unsigned byte to a byte"
@@ -40,6 +42,15 @@
       (map byte "data")
       (take 4 (get-bytes data-size))
       ])))
+
+(defn make-wav2 [samples sample-rate]
+  (let [byte-rate (/ (* sample-rate 32 channels) 8)
+        audio-format (AudioFormat. Encoding/PCM_FLOAT sample-rate 16 1 4 byte-rate)
+        ]
+
+      (println audio-format)
+
+    ))
 
 (defn make-wav [samples sample-rate]
   "Returns a single channel 16 bit WAV RIFF byte seq for a sample-rate and a
