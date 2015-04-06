@@ -68,10 +68,9 @@ App.prototype.postData = function() {
 
 App.prototype.recorderProcess = function(e) {
     var left = e.inputBuffer.getChannelData(0);
-    this.counter = this.counter + 1;
-    //var arr = Array.prototype.slice.call(left)
+    this.counter = this.counter + left.length;
     this.data.push(new Float32Array(left))
-    if (this.counter != 100) return; 
+    if (this.counter < (44100 * 1)) return;
     this.postData()
 } 
 
