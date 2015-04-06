@@ -40,14 +40,19 @@ App.prototype.bindEvents = function() {
 App.prototype.onResponse = function() {
     if (this.xhr.readyState != 4) return;
     var response = JSON.parse(this.xhr.responseText);
-    this.el.innerHTML = "Understood: " + response.text;
+    if (response.text) {
+        this.el.innerHTML = "Understood: " + response.text;
+    } else {
+        this.el.innerHTML = "Nothing recognized."; 
+    }
     var audio1 = new Audio("/data/" +  response.ok + ".wav");
     audio1.play();
+    this.record.disabled = false;
 }
 
 App.prototype.postData = function() {
     this.processor.disconnect()
-    this.el.innerHTML = "analysing";
+    this.el.innerHTML = "Analysing..";
     this.xhr = new XMLHttpRequest();
     this.xhr.open("POST", "/", true);
     this.xhr.setRequestHeader('Accept', 'application/json');
@@ -72,7 +77,7 @@ App.prototype.recorderProcess = function(e) {
     var left = e.inputBuffer.getChannelData(0);
     this.counter = this.counter + left.length;
     this.data.push(new Float32Array(left))
-    if (this.counter > (44100 * 1)) {
+    if (this.counter > (44100 * 2)) {
         this.recording = false;
         this.processor.disconnect();
         this.audioInput.disconnect();
@@ -81,8 +86,10 @@ App.prototype.recorderProcess = function(e) {
 }
 
 App.prototype.start_listening = function() {
+    this.record.enabled = false;
     this.el.innerHTML = "Listening.."
     this.recording = true;
+    this.record.disabled = true;
     this.data = []
     this.counter = 1
     this.audioInput = this.context.createMediaStreamSource(stream);

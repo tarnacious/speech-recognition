@@ -36,7 +36,7 @@
           [id path] (sample-and-save data)]
       (let [text (analyse path)]
         (response {"ok" id
-                   "text" text}))))))
+                   "text" (first text)}))))))
 
 (defroutes app-routes
   (GET "/" [] (redirect "/index.html"))

@@ -22,12 +22,12 @@
     <h1>Voice Recognition Demo</h1>
     <div id="permissions">
         <p>Please allow this page to use your microphone to continue. How this is done depends on your browser, but if it supports microphone sharing then there should be prompt somewhere above asking if you give permission to share it.</p>
+        <p id="errormessage"></p>
     </div> 
     <div id="application" style="display:none">
-        <p>Using a sample rate of <span id="samplerate"></span></p>
-        <p>To record and analyse a sample press record.</p>
+        <p>Great we seem to have stream with a sample rate of <span id="samplerate"></span>. From a voice sample it try to recognise numbers from 0 to 9 and a few animal names. Record a two second sample by pressing record.</p>
         <button id="record">Record</button>
-        <p id="output">Output</p>
+        <p id="output"></p>
     </div>
     </body>
 </div>
