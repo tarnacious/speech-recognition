@@ -74,6 +74,8 @@ App.prototype.recorderProcess = function(e) {
     this.data.push(new Float32Array(left))
     if (this.counter > (44100 * 1)) {
         this.recording = false;
+        this.processor.disconnect();
+        this.audioInput.disconnect();
         this.postData()
     }
 }
