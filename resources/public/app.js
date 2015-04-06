@@ -101,6 +101,7 @@ App.prototype.start_recording = function() {
     userMedia = navigator.mediaDevices.getUserMedia(constraints);
     userMedia.then(this.gotStream).catch(this.streamError);
     this.context = new AudioContext();
+    document.getElementById("samplerate").innerHTML = this.context.sampleRate + "Hz"
 }
 
 var app;
