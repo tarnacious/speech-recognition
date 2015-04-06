@@ -14,11 +14,12 @@
       "resource:/edu/cmu/sphinx/models/en-us/en-us.lm.dmp")
     configuration))
 
+(def configuration (configure))
+(def recognizer (StreamSpeechRecognizer. configuration))
+
+
 (defn analyse [filename]
-    (let [configuration (configure)
-          recognizer (StreamSpeechRecognizer. configuration)
-          stream (FileInputStream. filename)
-        ]
+    (let [stream (FileInputStream. filename)]
       (.startRecognition recognizer stream)
       (loop [result (.getResult recognizer)
              results []]
