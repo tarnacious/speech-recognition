@@ -15,11 +15,20 @@
     configuration))
 
 (def configuration (configure))
-(def recognizer (StreamSpeechRecognizer. configuration))
+
+
+(def _recognizer (atom nil))
+
+(defn get-recognizer []
+  (if (nil? @_recognizer)
+    (let [recognizer (StreamSpeechRecognizer. configuration)]
+      (swap! _recognizer (fn [prev] recognizer)))
+    @_recognizer))
 
 
 (defn analyse [filename]
-    (let [stream (FileInputStream. filename)]
+    (let [stream (FileInputStream. filename)
+          recognizer (get-recognizer)]
       (.startRecognition recognizer stream)
       (loop [result (.getResult recognizer)
              results []]

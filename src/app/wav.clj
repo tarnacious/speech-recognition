@@ -1,6 +1,18 @@
 (ns app.wav
-  (:import [javax.sound.sampled AudioInputStream AudioFormat]
-           [javax.sound.sampled.AudioFormat Encoding]))
+  (:import [javax.sound.sampled AudioInputStream AudioFormat AudioFormat$Encoding AudioSystem AudioFileFormat$Type ]
+
+
+   )
+
+  (:import
+    [java.nio ByteOrder]
+    [java.io ByteArrayInputStream]
+    [java.nio ByteBuffer]
+    [java.nio FloatBuffer]
+    [com.google.common.io LittleEndianDataInputStream]
+    [com.google.common.io ByteStreams])
+
+  )
 
 (defn ubyte [value]
   "Coerce a value in the range of an unsigned byte to a byte"
@@ -43,12 +55,14 @@
       (take 4 (get-bytes data-size))
       ])))
 
-(defn make-wav2 [samples sample-rate]
-  (let [byte-rate (/ (* sample-rate 32 channels) 8)
-        audio-format (AudioFormat. Encoding/PCM_FLOAT sample-rate 16 1 4 byte-rate)
+(defn sample-wav [samples]
+  (let [sample-rate 44100
+        byte-rate (/ (* sample-rate 32) 8)
+        audio-format (* 22 4096)
+        output-stream (clojure.java.io/output-stream "out.wav")
         ]
-
-      (println audio-format)
+      ;(AudioSystem/write input-stream AudioFileFormat$Type/WAVE output-stream)
+      ;(println input-stream)
 
     ))
 
@@ -65,6 +79,38 @@
   (with-open [output (clojure.java.io/output-stream filename)]
     (.write output (byte-array byte-seq))))
 
+(defn input-stream-to-floats [input]
+  (let [mybytes (ByteStreams/toByteArray input)
+        bbuffer (.order (ByteBuffer/wrap mybytes) ByteOrder/LITTLE_ENDIAN)
+        floatBuffer (.asFloatBuffer bbuffer)
+        items (.remaining floatBuffer)
+        arr (float-array items)]
+        (.get floatBuffer arr)
+        arr
+        ))
+
+(defn clip [value]
+  (cond
+    (> value 1.0) 1.0
+    (< value -1.0) -1.0
+    :else value))
+
+(defn sample [value]
+   (short (* (clip value) java.lang.Short/MAX_VALUE)))
+
+(defn save [filename input]
+  (let [audio-format (AudioFormat. 44100 16 1 true false)
+        float-samples (input-stream-to-floats input)
+        samples (map sample float-samples)
+        byte-buffer (ByteBuffer/allocate (* (count samples) 2))
+        little-endian (.order byte-buffer ByteOrder/LITTLE_ENDIAN)
+        short-buffer (.asShortBuffer little-endian)
+        _ (.put short-buffer (short-array samples))
+        pcm-byte-array (.array byte-buffer)
+        in-stream (clojure.java.io/input-stream pcm-byte-array)
+        audio-stream (AudioInputStream. in-stream audio-format (count samples))
+        ]
+      (AudioSystem/write audio-stream AudioFileFormat$Type/WAVE (clojure.java.io/output-stream filename))))
 
 (defn new-uuid []
     (java.util.UUID/randomUUID))
@@ -80,5 +126,5 @@
         (.mkdir (java.io.File. data-path)))
       (write-byte-seq path wav)
       ; TODO: work out how to use the Java Sound API
-      (clojure.java.shell/sh "sox" path "-b" "16" path2 "rate" "16k")
+      ;(clojure.java.shell/sh "sox" path "-b" "16" path2 "rate" "16k")
       [id path2]))

@@ -8,11 +8,16 @@
     [compojure.route :as route]
     [clojure.java.io :refer [output-stream]]
     [clojure.data.json :as json]
-    [app.wav :refer [sample-and-save]]
+    [app.wav :refer [sample-and-save sample-wav save]]
     [app.voice :refer [analyse]]
     [ring.util.response :refer [response redirect]])
   (:import
+    [java.nio ByteOrder]
+    [java.io ByteArrayInputStream]
+    [java.nio ByteBuffer]
+    [java.nio FloatBuffer]
     [com.google.common.io LittleEndianDataInputStream]
+    [com.google.common.io ByteStreams]
     [java.io DataInputStream]
     [java.io EOFException]))
 
@@ -22,8 +27,10 @@
     (catch EOFException e nil)))
 
 
-(defn readFloats [stream]
-  (let [input (LittleEndianDataInputStream. stream)]
+(defn read-floats [stream]
+  (let [input (LittleEndianDataInputStream. stream)
+
+        ]
     (loop [value (read-float input)
            values []]
       (if value
@@ -32,11 +39,16 @@
 
 (defroutes api-routes
   (POST "/" [] (fn [x]
-    (let [data (reverse (readFloats (:body x)))
-          [id path] (sample-and-save data)]
+
+  ;(clojure.java.io/copy (:body x) (clojure.java.io/output-stream "test.dat"))
+    (let [data (reverse (read-floats (:body x)))
+          [id path] (sample-and-save data)
+
+          ]
       (let [text (analyse path)]
         (response {"ok" id
-                   "text" (first text)}))))))
+                   "text" (first text)}))
+      ))))
 
 (defroutes app-routes
   (GET "/" [] (redirect "/index.html"))
@@ -48,5 +60,33 @@
 
 (def app combined-routes)
 
+
+
+
+(defn convert-byte-order [in-filename, out-filename]
+  (let [input (clojure.java.io/input-stream "test.dat")
+        mybytes (ByteStreams/toByteArray input)
+        bbuffer (.order (ByteBuffer/wrap mybytes) ByteOrder/LITTLE_ENDIAN)
+        floatBuffer (.asFloatBuffer bbuffer)
+        items (.remaining floatBuffer)
+        arr (float-array items)
+        _ (.get floatBuffer arr)
+        bbuffer2 (ByteBuffer/allocate (* items 4))
+        floatBuffer2 (.asFloatBuffer bbuffer2)
+        _ (.put floatBuffer2 arr)
+        arr2 (.array bbuffer2)]
+       (clojure.java.io/copy arr2 (clojure.java.io/output-stream "test2.dat"))
+  ))
+
 (defn -main [& args]
-  (run-jetty app {:port 3000}))
+  (let [input (clojure.java.io/input-stream "test.dat")
+        ;data (DataInputStream. input)
+        ;f (.readFloat data)
+
+
+        ]
+    (save "music.wav" input)
+  ))
+
+  ;(sample-wav []))
+  ;(run-jetty app {:port 3000}))
