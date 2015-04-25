@@ -126,5 +126,5 @@
         (.mkdir (java.io.File. data-path)))
       (write-byte-seq path wav)
       ; TODO: work out how to use the Java Sound API
-      ;(clojure.java.shell/sh "sox" path "-b" "16" path2 "rate" "16k")
+      (clojure.java.shell/sh "sox" path "-b" "16" path2 "rate" "16k")
       [id path2]))

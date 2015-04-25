@@ -43,7 +43,6 @@
   ;(clojure.java.io/copy (:body x) (clojure.java.io/output-stream "test.dat"))
     (let [data (reverse (read-floats (:body x)))
           [id path] (sample-and-save data)
-
           ]
       (let [text (analyse path)]
         (response {"ok" id
