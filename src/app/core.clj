@@ -37,14 +37,19 @@
         (recur (read-float input) (cons value values))
         values))))
 
+
+(defn new-uuid []
+    (java.util.UUID/randomUUID))
+
 (defroutes api-routes
   (POST "/" [] (fn [x]
-
-  ;(clojure.java.io/copy (:body x) (clojure.java.io/output-stream "test.dat"))
-    (let [data (reverse (read-floats (:body x)))
-          [id path] (sample-and-save data)
+    (let [
+          id (new-uuid)
+          data-path "resources/public/data"
+          file-path (str data-path "/" id ".wav")
+          _ (save file-path (:body x))
           ]
-      (let [text (analyse path)]
+      (let [text (analyse file-path)]
         (response {"ok" id
                    "text" (first text)}))
       ))))
@@ -81,8 +86,6 @@
   (let [input (clojure.java.io/input-stream "test.dat")
         ;data (DataInputStream. input)
         ;f (.readFloat data)
-
-
         ]
     (save "music.wav" input)
   ))
